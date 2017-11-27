@@ -5,6 +5,7 @@
 #include <AnimatedSprite.h>
 #include <Player.h>
 #include <Input.h>
+#include <string.h>
 #include <Debug.h>
 
 using namespace std;
@@ -41,6 +42,7 @@ int main()
 
 	// Setup Players Default Animated Sprite
 	AnimatedSprite animated_sprite(sprite_sheet);
+//	animated_sprite.setPosition(100, 100);
 	animated_sprite.addFrame(sf::IntRect(3, 3, 84, 84));
 	animated_sprite.addFrame(sf::IntRect(88, 3, 84, 84));
 	animated_sprite.addFrame(sf::IntRect(173, 3, 84, 84));
@@ -48,19 +50,46 @@ int main()
 	animated_sprite.addFrame(sf::IntRect(343, 3, 84, 84));
 	animated_sprite.addFrame(sf::IntRect(428, 3, 84, 84));
 
+	AnimatedSprite circle_sprite(sprite_sheet);
+	circle_sprite.addFrame(sf::IntRect(3, 88, 84, 84));
+	circle_sprite.addFrame(sf::IntRect(88, 88, 84, 84));
+	circle_sprite.addFrame(sf::IntRect(173, 88, 84, 84));
+	circle_sprite.addFrame(sf::IntRect(258, 88, 84, 84));
+	circle_sprite.addFrame(sf::IntRect(343, 88, 84, 84));
+	circle_sprite.addFrame(sf::IntRect(428, 88, 84, 84));
+
+	AnimatedSprite capsule_sprite(sprite_sheet);
+	capsule_sprite.addFrame(sf::IntRect(3, 173, 84, 84));
+	capsule_sprite.addFrame(sf::IntRect(88, 173, 84, 84));
+	capsule_sprite.addFrame(sf::IntRect(173, 173, 84, 84));
+	capsule_sprite.addFrame(sf::IntRect(258, 173, 84, 84));
+	capsule_sprite.addFrame(sf::IntRect(343, 173, 84, 84));
+	capsule_sprite.addFrame(sf::IntRect(428, 173, 84, 84));
+
 	// Setup Players AABB
 	c2AABB aabb_player;
 	aabb_player.min = c2V(animated_sprite.getPosition().x, animated_sprite.getPosition().y);
 	aabb_player.max = c2V(animated_sprite.getGlobalBounds().width / animated_sprite.getFrames().size(), 
 	animated_sprite.getGlobalBounds().height / animated_sprite.getFrames().size());
 
+	c2Circle circle_player;
+	circle_player.p = { circle_sprite.getPosition().x+42,circle_sprite.getPosition().y+42 };
+	circle_player.r = 42.f;
+
+	c2Capsule capsule_player;
+	capsule_player.a = c2V(circle_sprite.getPosition().x + 42, circle_sprite.getPosition().y);
+	capsule_player.b = c2V(circle_sprite.getPosition().x + 42, circle_sprite.getPosition().y+50);
+	capsule_player.r = 25.f;
 
 	// Setup the Player
 	Player player(animated_sprite);
+	Player circle(circle_sprite);
+	Player capsule(capsule_sprite);
 	//Input input;
 
 	// Collision result
 	int result = 0;
+	int ThatNum = 0;
 	
 	// Start the game loop
 	while (window.isOpen())
@@ -82,23 +111,25 @@ int main()
 				// Close window : exit
 				window.close();
 				break;
-		/*	case sf::Event::KeyPressed:
+			case sf::Event::KeyPressed:
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 				{
-					input.setCurrent(Input::Action::LEFT);
+					//input.setCurrent(Input::Action::LEFT);
+					ThatNum--;
 				}
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 				{
-					input.setCurrent(Input::Action::RIGHT);
+					//input.setCurrent(Input::Action::RIGHT);
+					ThatNum++;
 				}
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 				{
-					input.setCurrent(Input::Action::UP);
+					//input.setCurrent(Input::Action::UP);
 				}
 				break;
 			default:
-				input.setCurrent(Input::Action::IDLE);
-				break;*/
+				//input.setCurrent(Input::Action::IDLE);
+				break;
 			}
 		}
 
@@ -108,8 +139,8 @@ int main()
 		// Update the Player
 		player.update();
 
-		// Check for collisions
-		result = c2AABBtoAABB(aabb_mouse, aabb_player);
+		// Check for collisions between 2 vectors
+	/*	result = c2AABBtoAABB(aabb_mouse, aabb_player);
 		cout << ((result != 0) ? ("Collision") : "") << endl;
 		if (result)
 		{
@@ -118,13 +149,38 @@ int main()
 		else 
 		{
 			player.getAnimatedSprite().setColor(sf::Color(0, 255, 0)); 
+		}*/
+
+		//result = c2CircletoAABB(circle_player, aabb_mouse);
+		//cout << ((result != 0) ? ("Collision") : "") << endl;
+		//if (result)
+		//{
+		//	circle.getAnimatedSprite().setColor(sf::Color(255, 0, 0));
+		//}
+		//else
+		//{
+		//	circle.getAnimatedSprite().setColor(sf::Color(0, 255, 0));
+		//}
+
+		result = c2AABBtoCapsule(aabb_mouse, capsule_player);
+		cout << ((result != 0) ? ("Collision") : "") << endl;
+		if (result)
+		{
+			capsule.getAnimatedSprite().setColor(sf::Color(255, 0, 0));
 		}
+		else
+		{
+			capsule.getAnimatedSprite().setColor(sf::Color(0, 255, 0));
+		}
+		
 
 		// Clear screen
 		window.clear(sf::Color(255,255,255));
 
 		// Draw the Players Current Animated Sprite
-		window.draw(player.getAnimatedSprite());
+	//	window.draw(player.getAnimatedSprite());
+	//	window.draw(circle.getAnimatedSprite());
+		window.draw(capsule.getAnimatedSprite());
 		window.draw(mouse);
 
 		// Update the window
