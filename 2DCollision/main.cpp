@@ -30,6 +30,12 @@ int main()
 		return EXIT_FAILURE;
 	}
 
+	sf::Texture circleM_texture;
+	if (!circleM_texture.loadFromFile("assets\\circleM.png")) {
+		DEBUG_MSG("Failed to load file");
+		return EXIT_FAILURE;
+	}
+
 	int mouseShape = 0;
 	int playerShape = 0;
 
@@ -44,7 +50,6 @@ int main()
 
 	// Setup a mouse Sprite
 	sf::Sprite mouse;
-	mouse.setTexture(mouse_texture);
 
 	//Setup mouse AABB
 	c2AABB aabb_mouse;
@@ -52,15 +57,21 @@ int main()
 	aabb_mouse.max = c2V(mouse.getGlobalBounds().width, mouse.getGlobalBounds().width);
 
 	//Setup mouse Circle
+	c2Circle circle_mouse;
+	circle_mouse.p = c2V(mouse.getPosition().x+42, mouse.getPosition().y+42);
+	circle_mouse.r = 42.f;
+
+
+	//Setup mouse Circle
 	//c2Circle circle_mouse;
 	//circle_mouse.p = { mouse.getPosition().x, mouse.getPosition().y };
 	//circle_mouse.r = 42.f;
 
 	////Setup mouse Ray
-	//c2Ray ray_mouse;
-	//ray_mouse.p = c2V(mouse.getPosition().x, mouse.getPosition().y);
-	//ray_mouse.d = c2V(mouse.getPosition().x +84, mouse.getPosition().y+84);
-	//ray_mouse.t = 5.f;
+	/*c2Ray ray_mouse;
+	ray_mouse.p = c2V(mouse.getPosition().x, mouse.getPosition().y);
+	ray_mouse.d = c2V(mouse.getPosition().x +84, mouse.getPosition().y+84);
+	ray_mouse.t = 5.f;*/
 
 
 	// Setup Players Default Animated Sprite
@@ -99,9 +110,9 @@ int main()
 	circle_player.r = 42.f;
 
 	c2Capsule capsule_player;
-	capsule_player.a = c2V(capsule_sprite.getPosition().x, capsule_sprite.getPosition().y);
-	capsule_player.b = c2V(capsule_sprite.getPosition().x, capsule_sprite.getPosition().y); 
-	capsule_player.r = 1.f;
+	capsule_player.a = c2V(capsule_sprite.getPosition().x+44, capsule_sprite.getPosition().y);
+	capsule_player.b = c2V(capsule_sprite.getPosition().x+44, capsule_sprite.getPosition().y+50); 
+	capsule_player.r = 24.f;
 
 	//c2Ray ray_player;
 	//ray_player.p = c2V(0, 0);
@@ -188,57 +199,58 @@ int main()
 		// Update the Player
 		player.update();
 
-		if (playerShape == VECTOR && mouseShape == VECTOR)
+		if (mouseShape == VECTOR && playerShape == VECTOR)
 		{
 			//Check for collisions between 2 vectors
 			result = c2AABBtoAABB(aabb_mouse, aabb_player);
 		}
-		else if(playerShape == VECTOR && mouseShape == CIRCLE)
+		else if(mouseShape == VECTOR && playerShape == CIRCLE)
 		{
 			// Check for collisions between a vector and a circle
 			result = c2CircletoAABB(circle_player, aabb_mouse);
 		}
-		else if (playerShape == VECTOR && mouseShape == CAPSULE)
+		else if (mouseShape == VECTOR && playerShape == CAPSULE)
 		{
 			//Check for collisions between a vector and a capsule
 			result = c2AABBtoCapsule(aabb_mouse, capsule_player);
 		}
-		else if (playerShape == VECTOR && mouseShape == POLY)
+		else if (mouseShape == VECTOR && playerShape == POLY)
 		{
 			//Check for collisions between a vector and a poly
 			//result = c2AABBtoPoly();
 		}
-		else if (playerShape == VECTOR && mouseShape == RAY)
+		else if (mouseShape == VECTOR && playerShape == RAY)
 		{
 			//Check for collisions between a vector and a ray
 			//result = c2RaytoAABB();
 		}
-		else if (playerShape == CIRCLE && mouseShape == CIRCLE)
+
+		else if (mouseShape == CIRCLE && playerShape == CIRCLE)
 		{
 			//Check for collisions between a circle and a circle
-			//result = c2CircletoCircle();
+			result = c2CircletoCircle(circle_mouse, circle_player);
 		}
-		else if (playerShape == CIRCLE && mouseShape == CAPSULE)
+		else if (mouseShape == CIRCLE && playerShape == CAPSULE)
 		{
 			//Check for collisions between a circle and a capsule
 			//result = c2CircletoCapsule();
 		}
-		else if (playerShape == CIRCLE && mouseShape == POLY)
+		else if (mouseShape == CIRCLE && playerShape == POLY)
 		{
 			//Check for collisions between a circle and a poly
 			//result = c2CircletoPoly();
 		}
-		else if (playerShape == CIRCLE && mouseShape == RAY)
+		else if (mouseShape == CIRCLE && playerShape == RAY)
 		{
 			//Check for collisions a circle and a ray
 			//result = c2RaytoCircle();
 		}
-		else if (playerShape == CAPSULE && mouseShape == RAY)
+		else if (mouseShape == CAPSULE && playerShape == RAY)
 		{ 
 			//Check for collisions a capsule and a ray
 			//result = c2RaytoCapsule();
 		}
-		else if (playerShape == POLY && mouseShape == RAY)
+		else if (mouseShape == POLY && playerShape == RAY)
 		{
 			//Check for collisions a poly and a ray
 			//result = c2RaytoPoly();
@@ -262,29 +274,47 @@ int main()
 			capsule.getAnimatedSprite().setColor(sf::Color(0, 255, 0));
 		}
 
-
-	
-
 		// Clear screen
 		window.clear(sf::Color(255,255,255));
 
 		// Draw the Players Current Animated Sprite
-		if (playerShape == 0)
+		if (playerShape == VECTOR)
 		{
 			window.draw(player.getAnimatedSprite());
 		}
-		else if (playerShape == 1)
+		else if (playerShape == CIRCLE)
 		{
 			window.draw(circle.getAnimatedSprite());
 		}
-		else if (playerShape == 2)
+		else if (playerShape == CAPSULE)
 		{
 			window.draw(capsule.getAnimatedSprite());
 		}
 		
 		//Will be changed later
-		window.draw(mouse);
+		if (mouseShape == VECTOR)
+		{
+			mouse.setTexture(mouse_texture);
+			
+		}
+		else if (mouseShape == CIRCLE)
+		{
+			mouse.setTexture(circleM_texture);
+		}
+		else if (mouseShape == CAPSULE)
+		{
 
+		}
+		else if (mouseShape == POLY)
+		{
+
+		}
+		else if (mouseShape == RAY)
+		{
+
+		}
+
+		window.draw(mouse);
 		// Update the window
 		window.display();
 	}
